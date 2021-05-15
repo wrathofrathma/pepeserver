@@ -17,6 +17,8 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
+    "@types/cors": "^2.8.10",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "lodash": "^4.17.21",
     "trash-username-generator": "^1.0.0",

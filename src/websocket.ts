@@ -1,7 +1,7 @@
 import ws from 'ws';
 import users from './users';
 import generateUsername from "trash-username-generator";
-
+import {rooms} from "./rooms";
 import {uniqueId} from 'lodash';
 
 const server = new ws.Server({noServer: true});
@@ -37,6 +37,14 @@ server.on('connection', (sock, req) => {
             username,
             avatar,
             uuid
+        }
+    }));
+
+    // Send them the current room list
+    sock.send(JSON.stringify({
+        type: "rooms/index",
+        payload: {
+            rooms
         }
     }));
 
