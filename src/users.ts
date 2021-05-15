@@ -2,6 +2,7 @@ import ws from 'ws';
 
 export type User = {
     username: string,
+    avatar: string,
     socket: ws 
 }
 

@@ -19,6 +19,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "lodash": "^4.17.21",
+    "trash-username-generator": "^1.0.0",
     "ws": "^7.4.5"
   }
 }
