@@ -5,7 +5,7 @@ import {rooms} from "./data/rooms";
 import {uniqueId} from 'lodash';
 import jsonwebtoken from "jsonwebtoken";
 import {signature} from "./middleware/auth";
-import {subscribe, unsubscribe} from "./data/rooms";
+import {subscribe, unsubscribeAll, leaveAll} from "./data/rooms";
 import {getSubscriber} from "./data/subscribers";
 import WebSocketController from "./controllers/ws/WebSocketController";
 
@@ -38,9 +38,10 @@ server.on('connection', (sock, req) => {
     // When the socket closes, we want to remove them from the user entry list.
     // TODO - Update other users somehow? How do we emit an event for later.
     sock.on('close', () => {
-        // Unsubscribe from the index.
-        unsubscribe("index", {uuid, socket: sock});
-        // TODO - Unsubscribe from EVERYTHING
+        // Unsubscribe from all room related stuff
+        unsubscribeAll({uuid, socket: sock});
+        // Remove the user from all rooms
+        leaveAll({uuid, socket: sock})
         // Remove the user from the users list
         for (const [key, val] of users.entries()) {
             if (val.socket === sock) {

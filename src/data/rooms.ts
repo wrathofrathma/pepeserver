@@ -84,6 +84,23 @@ export function unsubscribe(key: string, subscriber: Subscriber, subkey: string 
 }
 
 /**
+ * Unsubscribes a user from all room related subscriptions.
+ * @param {Subscriber} subscriber Subscriber info
+ */
+export function unsubscribeAll(subscriber: Subscriber) {
+    lodash.remove(subscriptions.index, (sub) => {
+        if (sub.uuid === subscriber.uuid)
+            return true;
+        return false;
+    });
+    for (const [key, val] of subscriptions.rooms.entries()) { 
+        lodash.remove(val, (sub) => {
+            return sub.uuid === subscriber.uuid;
+        })
+    }
+}
+
+/**
  *  Creates a new chatroom and notifies subscribers of the room index that a new room is available. 
  * @param {RoomEntry} entry The RoomEntry containing the data of our room settings.
  * @param {string} password An optional room password.
@@ -146,4 +163,20 @@ export function leaveRoom(roomId: string, subscriber: Subscriber) {
     });
     publishIndexUpdate();
     publishRoomUpdate(roomId);
+}
+
+/**
+ * Leaves and unsubscribes a user from all rooms
+ * @param {Subscriber} subscriber Subscriber info
+ */
+export function leaveAll(subscriber: Subscriber) {
+    for (const [key, val] of Object.entries(rooms)) { 
+        lodash.remove(val.users, (sub) => {
+            if (sub === subscriber.uuid) {
+                publishIndexUpdate();
+                publishRoomUpdate(key);
+            }
+            return sub === subscriber.uuid;
+        })
+    }
 }
