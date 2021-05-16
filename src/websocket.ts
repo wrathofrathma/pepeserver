@@ -1,8 +1,13 @@
 import ws from 'ws';
-import users from './users';
+import users from './data/users';
 import generateUsername from "trash-username-generator";
-import {rooms} from "./rooms";
+import {rooms} from "./data/rooms";
 import {uniqueId} from 'lodash';
+import jsonwebtoken from "jsonwebtoken";
+import {signature} from "./middleware/auth";
+import {subscribe, unsubscribe} from "./data/rooms";
+import {getSubscriber} from "./data/subscribers";
+import WebSocketController from "./controllers/ws/WebSocketController";
 
 const server = new ws.Server({noServer: true});
 
@@ -18,39 +23,24 @@ server.on('connection', (sock, req) => {
         avatar
     });
 
-    /* I need to think carefully about my message spec to make the rest of this project simple.
-     * 
-     * Types of messages    
-     * - 'credentials': Our user specific data.
-     * - 'room message': Whatever room the user is subscribed to, if a message is published then we need to let them know.
-     * - 'webrtc signaling'
-     * - 'room list': In order to have the room list updated live, we need to have this updated occasionally when the user is on the index screen.
-     * - 'user count': I also want this to be live, so we need this to be a message
-     * - 'room info': Stuff like participants, room settings, 
-     * - 'user data': If we want other users' usernames & avatars to update in real time, as well as their settings such as things like "deafened", some sort of status, we need this.
-    */
+    // Send the user their auth token to match their UUIDs.
+    const token = jsonwebtoken.sign({data: {uuid}}, signature, { expiresIn: "6h"});
+    WebSocketController.emitToken(sock, token);
 
     // Send the user their default credentials.
-    sock.send(JSON.stringify({
-        type: "credentials",
-        payload: {
-            username,
-            avatar,
-            uuid
-        }
-    }));
+    WebSocketController.emitCredentials(sock, {username, avatar, uuid});
 
     // Send them the current room list
-    sock.send(JSON.stringify({
-        type: "rooms/index",
-        payload: {
-            rooms
-        }
-    }));
+    WebSocketController.emitRoomIndex(sock, rooms);
+
+    subscribe("index", {socket: sock, uuid});
 
     // When the socket closes, we want to remove them from the user entry list.
     // TODO - Update other users somehow? How do we emit an event for later.
     sock.on('close', () => {
+        // Unsubscribe from the index.
+        unsubscribe("index", {uuid, socket: sock});
+        // TODO - Unsubscribe from EVERYTHING
         // Remove the user from the users list
         for (const [key, val] of users.entries()) {
             if (val.socket === sock) {

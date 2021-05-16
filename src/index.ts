@@ -1,6 +1,6 @@
 import express, { Request } from 'express';
 import wsServer from './websocket';
-import roomRouter from "./rooms";
+import roomRouter from "./routes/rooms";
 import cors from "cors";
 
 const app = express();
