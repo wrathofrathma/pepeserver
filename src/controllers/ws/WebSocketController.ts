@@ -75,6 +75,15 @@ const WebSocketController = {
             }
         }));
     },
+    emitRoomHistory(sock: ws, room: string, messages: Array<Message>) {
+        sock.send(JSON.stringify({
+            event: "room/history",
+            payload: {
+                room, 
+                history: messages 
+            }
+        }));
+    },
     createRoomMessage(sock: ws, payload: MessagePayload) {
         // We need to send the message to all the users subscribed to the channel.
         const user = getUUIDBySocket(sock);

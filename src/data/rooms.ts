@@ -164,6 +164,8 @@ export function joinRoom(roomId: string, subscriber: Subscriber) {
     subscriptions.rooms.get(roomId)?.push(subscriber);
     publishIndexUpdate();
     publishRoomUpdate(roomId);
+    // We also need to send the user all the previous chat messages.
+    WebSocketController.emitRoomHistory(subscriber.socket, roomId, messages[roomId]);
 }
 
 /**
@@ -210,8 +212,6 @@ export function destroyMessage(uuid: string, userId: string) {
  * @param payload Message to be published
  */
 export function publishMessage(uuid: string, payload: MessagePayload) {
-    console.log("publish message", payload);
-    console.log("Previous messages", messages[payload.roomId])
     if (!messages[payload.roomId])
         return
     // Create message
@@ -225,10 +225,8 @@ export function publishMessage(uuid: string, payload: MessagePayload) {
     // Save it to the message db
     messages[payload.roomId].push(message);
 
-    console.log("Publishing message", payload);
     // publish it to users in the channel
     for (const userId of rooms[payload.roomId].users) {
-        console.log("Publishing to?", userId)
         const socket = getSocketByUUID(userId as string);
         if (!socket)
             continue;
