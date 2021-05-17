@@ -13,14 +13,14 @@ export type RoomEntry = {
     screenshare: Boolean,
     locked: Boolean,
     users: Array<String>,
-    lastActive: Number
+    lastActive: number
 }
 
 export type Message = {
     uuid: String
     userId: String,
     contents: String,
-    timestamp: Number,
+    timestamp: number,
 }
 
 export const rooms: {[key: string]: RoomEntry} = {};
@@ -134,6 +134,18 @@ export function createRoom(entry: RoomEntry, password: string) {
     // Create the room's message store
     messages[id] = [];
 
+    // Create callback that destroys the room after 5 minutes of nobody being in the room
+    setInterval(() => {
+        if (rooms[id].users.length !== 0)
+            return;
+        
+        // If 5 minutes have elapsed since any messages have been sent and nobody is in the room, we remove
+        if (Date.now() - rooms[id].lastActive > 5 * 1000 * 60) {
+            removeRoom(id);
+        }
+            
+    }, 5 * 1000 * 60);
+
     // Return the room & room id 
     return {...rooms[id],id};
 }
@@ -224,6 +236,9 @@ export function publishMessage(uuid: string, payload: MessagePayload) {
 
     // Save it to the message db
     messages[payload.roomId].push(message);
+
+    // Update the room activity timer.
+    rooms[payload.roomId].lastActive = message.timestamp;
 
     // publish it to users in the channel
     for (const userId of rooms[payload.roomId].users) {
