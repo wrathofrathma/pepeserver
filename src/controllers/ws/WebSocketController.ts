@@ -1,5 +1,6 @@
 import ws from "ws";
 import {publishMessage} from "../../data/rooms";
+import type {User} from "../../data/users";
 
 /* I need to think carefully about my message spec to make the rest of this project simple.
 * 
@@ -53,6 +54,14 @@ const WebSocketController = {
             event: "room/info",
             payload: {
                 room: roomInfo
+            }
+        }));
+    },
+    emitUserList(sock: ws, users: unknown) {
+        sock.send(JSON.stringify({
+            event: "user/index",
+            payload: {
+                users
             }
         }));
     },

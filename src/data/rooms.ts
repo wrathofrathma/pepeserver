@@ -1,6 +1,5 @@
 import { uniqueId } from "lodash";
 import type {Subscriber} from "./subscribers";
-import ws from "ws";
 import lodash from "lodash";
 import WebSocketController from "../controllers/ws/WebSocketController";
 import type {MessagePayload} from "../controllers/ws/WebSocketController";
