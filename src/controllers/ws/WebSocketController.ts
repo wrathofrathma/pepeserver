@@ -1,6 +1,8 @@
 import ws from "ws";
 import {publishMessage} from "../../data/rooms";
+import type {Message} from "../../data/rooms";
 import type {User} from "../../data/users";
+import {getUUIDBySocket} from "../../data/users";
 
 /* I need to think carefully about my message spec to make the rest of this project simple.
 * 
@@ -20,7 +22,6 @@ import type {User} from "../../data/users";
 export type MessagePayload = {
     roomId: string,
     message: string,
-    media: string
 }
 
 /**
@@ -65,17 +66,33 @@ const WebSocketController = {
             }
         }));
     },
+    emitRoomMessage(sock: ws, room: string, message: Message) {
+        sock.send(JSON.stringify({
+            event: "room/message",
+            payload: {
+                room, 
+                message 
+            }
+        }));
+    },
     createRoomMessage(sock: ws, payload: MessagePayload) {
         // We need to send the message to all the users subscribed to the channel.
-        
-
+        const user = getUUIDBySocket(sock);
+        if (!user) {
+            console.error("[createRoomMessage] Invalid user");
+            return;
+        }
+        publishMessage(user, payload);
     },
     // Router for user-generated messages
-    messageRouter(this: ws, message: {event: string, payload: Object}) {
-        const {event, payload} = message;
+    messageRouter(this: ws, message: any) {
+        const {event, payload} = JSON.parse(message);
 
         if (event === "room/createmessage") {
             WebSocketController.createRoomMessage(this, payload as MessagePayload)
+        } 
+        else if (event === "room/deletemessage") {
+
         }
     }
 }

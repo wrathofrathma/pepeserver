@@ -3,6 +3,8 @@ import type {Subscriber} from "./subscribers";
 import lodash from "lodash";
 import WebSocketController from "../controllers/ws/WebSocketController";
 import type {MessagePayload} from "../controllers/ws/WebSocketController";
+import { getSocketByUUID } from "./users";
+import ws from "ws";
 
 export type RoomEntry = {
     name: String,
@@ -14,7 +16,15 @@ export type RoomEntry = {
     lastActive: Number
 }
 
+export type Message = {
+    uuid: String
+    userId: String,
+    contents: String,
+    timestamp: Number,
+}
+
 export const rooms: {[key: string]: RoomEntry} = {};
+export const messages: {[key: string]: Array<Message>} = {};
 
 // Split passwords from the rooms object so updating the users of room changes is simple.
 export const passwords: {[key: string]: string} = {};
@@ -121,6 +131,9 @@ export function createRoom(entry: RoomEntry, password: string) {
     // Now we need to update the subscribers.
     publishIndexUpdate();
 
+    // Create the room's message store
+    messages[id] = [];
+
     // Return the room & room id 
     return {...rooms[id],id};
 }
@@ -134,6 +147,7 @@ export function removeRoom(roomId: string) {
     if (rooms[roomId]) {
         // We should just be able to delete it since we only really delete when there's no users in it after some time period
         delete rooms[roomId];
+        delete messages[roomId];
         // Clean up the subscribers of this channel
         subscriptions.rooms.delete(roomId);
         // Notify the peeps
@@ -181,6 +195,43 @@ export function leaveAll(subscriber: Subscriber) {
     }
 }
 
-export function publishMessage(uuid: string, payload: MessagePayload) {
+/**
+ * Deletes a room message.
+ * @param uuid Message uuid
+ * @param userId User's uuid
+ */
+export function destroyMessage(uuid: string, userId: string) {
 
+}
+
+/**
+ * Publishes a room message to all the users listening.
+ * @param uuid User's uuid
+ * @param payload Message to be published
+ */
+export function publishMessage(uuid: string, payload: MessagePayload) {
+    console.log("publish message", payload);
+    console.log("Previous messages", messages[payload.roomId])
+    if (!messages[payload.roomId])
+        return
+    // Create message
+    const message: Message = {
+        uuid: uniqueId(),
+        userId: uuid,
+        contents: payload.message,
+        timestamp: Date.now()
+    }
+
+    // Save it to the message db
+    messages[payload.roomId].push(message);
+
+    console.log("Publishing message", payload);
+    // publish it to users in the channel
+    for (const userId of rooms[payload.roomId].users) {
+        console.log("Publishing to?", userId)
+        const socket = getSocketByUUID(userId as string);
+        if (!socket)
+            continue;
+        WebSocketController.emitRoomMessage(socket as ws, payload.roomId, message);
+    }
 }

@@ -21,6 +21,27 @@ function publishUserIndex() {
     }
 }
 
+export function getUUIDBySocket(socket: ws) {
+    for (const [uuid, s] of Object.entries(sockets)) {
+        if (s === socket)
+            return uuid;
+    }
+    return ""
+}
+
+export function getUserByUUID(uuid: string) {
+    if (users[uuid])
+        return users[uuid];
+    return undefined;
+}
+
+export function getSocketByUUID(uuid: string) {
+    if (sockets[uuid])
+        return sockets[uuid];
+    return undefined;
+}
+
+
 /**
  * Creates a new user, updates everyone that someone has connected, and returns the new user's data. 
  * @param {ws} socket Websocket
