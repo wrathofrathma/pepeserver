@@ -3,6 +3,7 @@ import type {Subscriber} from "./subscribers";
 import ws from "ws";
 import lodash from "lodash";
 import WebSocketController from "../controllers/ws/WebSocketController";
+import type {MessagePayload} from "../controllers/ws/WebSocketController";
 
 export type RoomEntry = {
     name: String,
@@ -17,7 +18,7 @@ export type RoomEntry = {
 export const rooms: {[key: string]: RoomEntry} = {};
 
 // Split passwords from the rooms object so updating the users of room changes is simple.
-export const passwords: {[key: string]: String} = {};
+export const passwords: {[key: string]: string} = {};
 
 const subscriptions = {
     index: new Array<Subscriber>(),
@@ -179,4 +180,8 @@ export function leaveAll(subscriber: Subscriber) {
             return sub === subscriber.uuid;
         })
     }
+}
+
+export function publishMessage(uuid: string, payload: MessagePayload) {
+
 }

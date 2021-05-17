@@ -6,7 +6,6 @@ import {uniqueId} from 'lodash';
 import jsonwebtoken from "jsonwebtoken";
 import {signature} from "./middleware/auth";
 import {subscribe, unsubscribeAll, leaveAll} from "./data/rooms";
-import {getSubscriber} from "./data/subscribers";
 import WebSocketController from "./controllers/ws/WebSocketController";
 
 const server = new ws.Server({noServer: true});
@@ -23,6 +22,8 @@ server.on('connection', (sock, req) => {
         avatar
     });
 
+    sock.on("message", WebSocketController.messageRouter);
+
     // Send the user their auth token to match their UUIDs.
     const token = jsonwebtoken.sign({data: {uuid}}, signature, { expiresIn: "6h"});
     WebSocketController.emitToken(sock, token);
@@ -33,7 +34,9 @@ server.on('connection', (sock, req) => {
     // Send them the current room list
     WebSocketController.emitRoomIndex(sock, rooms);
 
+    // Default user subscriptions
     subscribe("index", {socket: sock, uuid});
+    // TODO - Add a user list subscription
 
     // When the socket closes, we want to remove them from the user entry list.
     // TODO - Update other users somehow? How do we emit an event for later.

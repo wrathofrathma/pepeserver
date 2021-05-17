@@ -2,9 +2,10 @@ import { NextFunction, Request, Response } from "express"
 import {createRoom, rooms, passwords, joinRoom} from "../../data/rooms";
 import type {RoomEntry} from "../../data/rooms";
 import {getSubscriber, Subscriber} from "../../data/subscribers";
+import argon2 from "argon2";
 
 const RoomController = {
-    create(req: Request, res: Response) {
+    async create(req: Request, res: Response) {
         const {name, video, audio, screenshare, password} = req.body;
         const locked = req.body.private;
 
@@ -18,29 +19,39 @@ const RoomController = {
             users: []
         }
 
-        const room = createRoom(entry, password);
+        const encrypted_password = await argon2.hash(password);
+        const room = createRoom(entry, encrypted_password);
 
         // Send the user back the new successful room
         res.send(room);
     },
 
-    join(req: Request, res: Response, next: NextFunction) {
+    async join(req: Request, res: Response, next: NextFunction) {
         const {id} = req.params;
         const {password} = req.body;
+        // Strip the user's uuid from the request that we attached it to from the auth middleware.
+        const uuid = req.uuid;
         // check if room exists
         if (!rooms.hasOwnProperty(id)) {
             res.sendStatus(404);        
+            return;
+        }
+        // Since we also attempt joining when the user enters the page, let's check if they're already in the room
+        if (rooms[id].users.includes(uuid)) {
+            // If they're in it, let's just remind them and not do anything data alterations.
+            res.sendStatus(200);
+            return;
         }
 
         // Check if the room is locked and the password matches
         if (passwords.hasOwnProperty(id)) {
-            if (passwords[id] !== password) {
+            const valid_password = await argon2.verify(passwords[id], password);
+            if (!valid_password) {
                 res.sendStatus(403);
+                return;
             }
         }
 
-        // Strip the user's uuid from the request that we attached it to from the auth middleware.
-        const uuid = req.uuid;
         // If we make it this far, we need to
         // 1. Add our user to the users in the chatroom
         rooms[id].users.push(uuid);

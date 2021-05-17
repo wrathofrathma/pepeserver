@@ -1,6 +1,5 @@
-import { IncomingMessage } from "http";
-import { snakeCase } from "lodash";
 import ws from "ws";
+import {publishMessage} from "../../data/rooms";
 
 /* I need to think carefully about my message spec to make the rest of this project simple.
 * 
@@ -15,6 +14,13 @@ import ws from "ws";
 * - 'user count': I also want this to be live, so we need this to be a message
 * - 'user data': If we want other users' usernames & avatars to update in real time, as well as their settings such as things like "deafened", some sort of status, we need this.
 */
+
+// Let's also define some payload types for different events so we can keep things consistent.
+export type MessagePayload = {
+    roomId: string,
+    message: string,
+    media: string
+}
 
 /**
  * Websocket controller to handle emitting events on a given socket.
@@ -50,6 +56,19 @@ const WebSocketController = {
             }
         }));
     },
+    createRoomMessage(sock: ws, payload: MessagePayload) {
+        // We need to send the message to all the users subscribed to the channel.
+        
+
+    },
+    // Router for user-generated messages
+    messageRouter(this: ws, message: {event: string, payload: Object}) {
+        const {event, payload} = message;
+
+        if (event === "room/createmessage") {
+            WebSocketController.createRoomMessage(this, payload as MessagePayload)
+        }
+    }
 }
 
 export default WebSocketController;
