@@ -59,7 +59,7 @@ export function createUser(socket: ws) {
     users[uuid] = {
         username,
         dead: false,
-        avatar: ""
+        avatar
     };
 
     sockets[uuid] = socket;
