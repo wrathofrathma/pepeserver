@@ -77,4 +77,11 @@ export function destroyUser(uuid: string) {
     publishUserIndex();
 }
 
+export function rerollUsername(sock: ws) {
+    const uuid = getUUIDBySocket(sock);
+    const username = generateUsername();
+    users[uuid].username = username;
+    publishUserIndex();
+}
+
 export default users;

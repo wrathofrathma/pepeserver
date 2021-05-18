@@ -3,6 +3,7 @@ import {publishMessage} from "../../data/rooms";
 import type {Message} from "../../data/rooms";
 import type {User} from "../../data/users";
 import {getUUIDBySocket} from "../../data/users";
+import {rerollUsername} from "../../data/users";
 
 /* I need to think carefully about my message spec to make the rest of this project simple.
 * 
@@ -93,6 +94,9 @@ const WebSocketController = {
         }
         publishMessage(user, payload);
     },
+    rerollUsername(sock: ws) {
+        rerollUsername(sock);
+    },
     // Router for user-generated messages
     messageRouter(this: ws, message: any) {
         const {event, payload} = JSON.parse(message);
@@ -102,6 +106,9 @@ const WebSocketController = {
         } 
         else if (event === "ping") {
             this.send(JSON.stringify({event: "pong"}));
+        }
+        else if (event === "user/username") {
+            WebSocketController.rerollUsername(this);
         }
         else if (event === "room/deletemessage") {
 
