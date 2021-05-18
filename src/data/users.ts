@@ -6,6 +6,7 @@ import WebSocketController from "../controllers/ws/WebSocketController";
 export type User = {
     username: string,
     avatar: string,
+    dead: boolean
 }
 
 // const users = new Map<String, User>();
@@ -54,6 +55,7 @@ export function createUser(socket: ws) {
 
     users[uuid] = {
         username,
+        dead: false,
         avatar: ""
     };
 
@@ -69,7 +71,8 @@ export function createUser(socket: ws) {
  * @param {string} uuid User's uuid
  */
 export function destroyUser(uuid: string) {
-    delete users[uuid];
+    // delete users[uuid];
+    users[uuid].dead = true;
     delete sockets[uuid];
     publishUserIndex();
 }
