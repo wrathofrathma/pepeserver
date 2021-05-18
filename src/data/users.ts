@@ -82,6 +82,11 @@ export function rerollUsername(sock: ws) {
     const username = generateUsername();
     users[uuid].username = username;
     publishUserIndex();
+    WebSocketController.emitCredentials(sock, {
+        username,
+        avatar: users[uuid].avatar,
+        dead: users[uuid].dead
+    });
 }
 
 export default users;
