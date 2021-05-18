@@ -80,16 +80,25 @@ export function destroyUser(uuid: string) {
     publishUserIndex();
 }
 
-export function rerollUsername(sock: ws) {
-    const uuid = getUUIDBySocket(sock);
+export function rerollUsername(uuid: string): string {
     const username = generateUsername();
     users[uuid].username = username;
+    const sock = getSocketByUUID(uuid);
     publishUserIndex();
-    WebSocketController.emitCredentials(sock, {
+    WebSocketController.emitCredentials(sock as ws, {
         username,
         avatar: users[uuid].avatar,
         dead: users[uuid].dead
     });
+    return username;
+}
+
+export function updateAvatar(uuid: string, avatar: string) {
+    users[uuid].avatar = avatar;
+    const sock = getSocketByUUID(uuid);
+
+    publishUserIndex();
+    WebSocketController.emitCredentials(sock as ws, users[uuid]);
 }
 
 export default users;

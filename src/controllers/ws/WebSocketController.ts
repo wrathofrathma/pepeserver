@@ -94,9 +94,6 @@ const WebSocketController = {
         }
         publishMessage(user, payload);
     },
-    rerollUsername(sock: ws) {
-        rerollUsername(sock);
-    },
     // Router for user-generated messages
     messageRouter(this: ws, message: any) {
         const {event, payload} = JSON.parse(message);
@@ -106,9 +103,6 @@ const WebSocketController = {
         } 
         else if (event === "ping") {
             this.send(JSON.stringify({event: "pong"}));
-        }
-        else if (event === "user/username") {
-            WebSocketController.rerollUsername(this);
         }
         else if (event === "room/deletemessage") {
 
