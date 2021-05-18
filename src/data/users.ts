@@ -52,10 +52,9 @@ export function getSocketByUUID(uuid: string) {
 export function createUser(socket: ws) {
     const uuid = uniqueId();
     const username = generateUsername();
-    // const avatar = ""; // TODO randomly select an avatar once we add them
 
-    const avatarList = readdirSync("../public/assets/avatars");
-    const avatar = avatarList[Math.floor(Math.random() * avatarList.length)];
+    const avatarList = readdirSync("dist/public/assets/avatars");
+    const avatar = `https://pepeserver.herokuapp.com/assets/avatars/${avatarList[Math.floor(Math.random() * avatarList.length)]}`;
 
     users[uuid] = {
         username,
