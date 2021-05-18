@@ -100,6 +100,9 @@ const WebSocketController = {
         if (event === "room/createmessage") {
             WebSocketController.createRoomMessage(this, payload as MessagePayload)
         } 
+        else if (event === "ping") {
+            this.send(JSON.stringify({event: "pong"}));
+        }
         else if (event === "room/deletemessage") {
 
         }

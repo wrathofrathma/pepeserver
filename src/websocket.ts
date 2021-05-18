@@ -26,6 +26,10 @@ server.on('connection', (sock, req) => {
     // Default user subscriptions
     subscribe("index", {socket: sock, uuid});
 
+    const keepAlive = setInterval(() => {
+        sock.send(JSON.stringify({event: "ping"}));
+    }, 30*1000);
+
     // When the socket closes, we want to remove them from the user entry list.
     sock.on('close', () => {
         // Unsubscribe from all room related stuff
@@ -34,6 +38,9 @@ server.on('connection', (sock, req) => {
         leaveAll({uuid, socket: sock})
         // Remove the user from the users list
         destroyUser(uuid);
+
+        // Clear the keepalive pings
+        clearInterval(keepAlive);
     })
 });
 
