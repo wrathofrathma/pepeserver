@@ -4,14 +4,14 @@ import roomRouter from "./routes/rooms";
 import cors from "cors";
 
 const app = express();
-const port = process.env.port || 3000;
+const port = process.env.port;
 
 app.use(cors());
 app.use(express.json());
 app.use("/room", roomRouter);
 
 const server = app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`);
+    console.log(`PepeChat listening at http://localhost:${port}`);
 })
 
 
