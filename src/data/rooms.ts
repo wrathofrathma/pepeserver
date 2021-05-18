@@ -54,7 +54,7 @@ function publishRoomUpdate(roomId: string) {
 
 /**
  * Subscribe to the events of the room index or a specific room.
- * @param {string} key What type of subscription is it?
+ * @param {string} key What type of subscription is it? [index, room]
  * @param {Subscriber} subscriber Subscriber data
  * @param {string} subkey Room key if we're subscribing to a room
  */
@@ -72,7 +72,7 @@ export function subscribe(key: string, subscriber: Subscriber, subkey: string = 
 
 /**
  * Unsubscribe from the events of the room index or a specific room.
- * @param {string} key What type of subscription is it?
+ * @param {string} key What type of subscription is it? [index, room]
  * @param {Subscriber} subscriber Subscriber data
  * @param {string} subkey Room key if we're subscribing to a room
  */
@@ -174,6 +174,14 @@ export function removeRoom(roomId: string) {
  * @param {Subscriber} subscriber Subscriber info
  */
 export function joinRoom(roomId: string, subscriber: Subscriber) {
+    // Let's first check if the user is in a room or has any room subscriptions, and leave them. 
+    for (const [key, room] of Object.entries(rooms)) {
+        if (room.users.includes(subscriber.uuid)) {
+            // Then we need to unsub and remove from the room
+            if (roomId !== key)
+                leaveRoom(key, subscriber);
+        }
+    }
     subscriptions.rooms.get(roomId)?.push(subscriber);
     publishIndexUpdate();
     publishRoomUpdate(roomId);
@@ -187,9 +195,8 @@ export function joinRoom(roomId: string, subscriber: Subscriber) {
  * @param {Subscriber} subscriber Subscriber info
  */
 export function leaveRoom(roomId: string, subscriber: Subscriber) {
-    lodash.remove(subscriptions.rooms.get(roomId) as Array<Subscriber>, (sub) => {
-        return sub.uuid === subscriber.uuid;
-    });
+    unsubscribe("room", subscriber, roomId);
+    lodash.remove(rooms[roomId].users, (user) => user === subscriber.uuid);
     publishIndexUpdate();
     publishRoomUpdate(roomId);
 }
