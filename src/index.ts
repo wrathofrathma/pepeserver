@@ -4,7 +4,7 @@ import roomRouter from "./routes/rooms";
 import cors from "cors";
 
 const app = express();
-const port = process.env.port;
+const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
