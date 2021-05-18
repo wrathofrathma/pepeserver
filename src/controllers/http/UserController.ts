@@ -4,11 +4,9 @@ import {rerollUsername, updateAvatar} from "../../data/users";
 
 const UserController = {
     avatarIndex(req: Request, res: Response) {
-        console.log("Avatar index request")
         const avatarList = readdirSync("dist/public/assets/avatars").map((val) => {
             return `https://pepeserver.herokuapp.com/assets/avatars/${val}`
         });
-        console.log("Avatar list", avatarList)
         res.send({
             avatars: avatarList
         })
