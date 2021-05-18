@@ -1,8 +1,6 @@
 import ws from 'ws';
-import users from './data/users';
 import {createUser, destroyUser} from "./data/users"
 import {rooms} from "./data/rooms";
-import {uniqueId} from 'lodash';
 import jsonwebtoken from "jsonwebtoken";
 import {signature} from "./middleware/auth";
 import {subscribe, unsubscribeAll, leaveAll} from "./data/rooms";

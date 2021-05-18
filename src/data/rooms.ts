@@ -114,7 +114,7 @@ export function unsubscribeAll(subscriber: Subscriber) {
  *  Creates a new chatroom and notifies subscribers of the room index that a new room is available. 
  * @param {RoomEntry} entry The RoomEntry containing the data of our room settings.
  * @param {string} password An optional room password.
- * @returns {}
+ * @return {}
  */
 export function createRoom(entry: RoomEntry, password: string) {
     // Create a new room with a unique ID, so we don't have any conflicts in room addresses
@@ -135,13 +135,14 @@ export function createRoom(entry: RoomEntry, password: string) {
     messages[id] = [];
 
     // Create callback that destroys the room after 5 minutes of nobody being in the room
-    setInterval(() => {
+    const roomCheck = setInterval(() => {
         if (rooms[id].users.length !== 0)
             return;
         
         // If 5 minutes have elapsed since any messages have been sent and nobody is in the room, we remove
         if (Date.now() - rooms[id].lastActive > 5 * 1000 * 60) {
             removeRoom(id);
+            clearInterval(roomCheck);
         }
             
     }, 5 * 1000 * 60);

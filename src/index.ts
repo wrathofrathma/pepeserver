@@ -18,6 +18,5 @@ const server = app.listen(port, () => {
 server.on('upgrade', (req: any, socket: any, head: any) => {
     wsServer.handleUpgrade(req, socket, head, socket => {
         wsServer.emit('connection', socket, req);
-        console.log("ws connection")
     })
 })
