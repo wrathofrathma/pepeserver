@@ -1,7 +1,8 @@
 import ws from 'ws';
-import {uniqueId} from 'lodash';
+import {random, uniqueId} from 'lodash';
 import generateUsername from "trash-username-generator";
 import WebSocketController from "../controllers/ws/WebSocketController";
+import { readdirSync } from 'fs';
 
 export type User = {
     username: string,
@@ -51,7 +52,10 @@ export function getSocketByUUID(uuid: string) {
 export function createUser(socket: ws) {
     const uuid = uniqueId();
     const username = generateUsername();
-    const avatar = ""; // TODO randomly select an avatar once we add them
+    // const avatar = ""; // TODO randomly select an avatar once we add them
+
+    const avatarList = readdirSync("../public/assets/avatars");
+    const avatar = avatarList[Math.floor(Math.random() * avatarList.length)];
 
     users[uuid] = {
         username,
