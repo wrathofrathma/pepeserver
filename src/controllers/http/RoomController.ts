@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express"
-import {createRoom, rooms, passwords, joinRoom} from "../../data/rooms";
+import {createRoom, rooms, passwords, joinRoom, leaveRoom} from "../../data/rooms";
 import type {RoomEntry} from "../../data/rooms";
 import {getSubscriber, Subscriber} from "../../data/subscribers";
 import argon2 from "argon2";
@@ -61,8 +61,21 @@ const RoomController = {
         res.sendStatus(200);
     }, 
 
-    leave() {
+    leave(req: Request, res: Response, next: NextFunction) {
+        const {id} = req.params;
+        // Strip the user's uuid from the request that we attached it to from the auth middleware.
+        const uuid = req.uuid;
 
+        // check if room exists
+        if (!rooms.hasOwnProperty(id)) {
+            // If the room exists, just tell them it succeeded since they can't be in it anyways.
+            res.sendStatus(200);        
+            return;
+        }
+
+        // Remove the user and tell them it worked out.
+        leaveRoom(id, getSubscriber(uuid) as Subscriber);
+        res.sendStatus(200);
     }
 }
 

@@ -7,7 +7,7 @@ const router = Router();
 router.use(AuthMiddleware);
 
 router.post("/create", RoomController.create);
-router.post("/join/:id", RoomController.join);
-router.post("/leave/:id", RoomController.leave);
+router.post("/:id/join", RoomController.join);
+router.post("/:id/leave", RoomController.leave);
 
 export default router;
