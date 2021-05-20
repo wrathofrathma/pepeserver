@@ -217,6 +217,7 @@ export function leaveRoom(roomId: string, subscriber: Subscriber) {
  */
 export function leaveAll(subscriber: Subscriber) {
     for (const [key, val] of Object.entries(rooms)) { 
+        delete val.streams[subscriber.uuid as string];
         lodash.remove(val.users, (sub) => {
             if (sub === subscriber.uuid) {
                 publishIndexUpdate();
