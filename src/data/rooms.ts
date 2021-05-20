@@ -6,6 +6,14 @@ import type {MessagePayload} from "../controllers/ws/WebSocketController";
 import { getSocketByUUID } from "./users";
 import ws from "ws";
 
+
+export type RoomStreamState = {
+    [key: string]: {
+        webcam: boolean,
+        audio: boolean
+    }
+}
+
 export type RoomEntry = {
     name: String,
     video: Boolean,
@@ -13,7 +21,8 @@ export type RoomEntry = {
     screenshare: Boolean,
     locked: Boolean,
     users: Array<String>,
-    lastActive: number
+    lastActive: number,
+    streams: RoomStreamState,
 }
 
 export type Message = {
@@ -197,6 +206,7 @@ export function joinRoom(roomId: string, subscriber: Subscriber) {
 export function leaveRoom(roomId: string, subscriber: Subscriber) {
     unsubscribe("room", subscriber, roomId);
     lodash.remove(rooms[roomId].users, (user) => user === subscriber.uuid);
+    delete rooms[roomId].streams[subscriber.uuid as string];
     publishIndexUpdate();
     publishRoomUpdate(roomId);
 }
@@ -255,4 +265,19 @@ export function publishMessage(uuid: string, payload: MessagePayload) {
             continue;
         WebSocketController.emitRoomMessage(socket as ws, payload.roomId, message);
     }
+}
+
+/**
+ * Sets the user's webcam/mic stream state for the room they're in.
+ * @param room Room ID
+ * @param user User's UUID, probably grabbed from the request or socket.
+ * @param state Stream state
+ */
+export function setUserStreamState(room: string, user: string, state: {webcam: boolean, audio: boolean}) {
+    if (!rooms[room]) {
+        return;
+    }
+    rooms[room].streams[user] = state;
+    publishIndexUpdate();
+    publishRoomUpdate(room);
 }

@@ -1,5 +1,5 @@
 import ws from "ws";
-import {publishMessage} from "../../data/rooms";
+import {publishMessage, setUserStreamState} from "../../data/rooms";
 import type {Message} from "../../data/rooms";
 import type {User} from "../../data/users";
 import {getUUIDBySocket} from "../../data/users";
@@ -94,6 +94,13 @@ const WebSocketController = {
         }
         publishMessage(user, payload);
     },
+    setStreamState(sock: ws, payload: {room: string, state: {webcam: boolean, audio: boolean}}) {
+        const {room, state} = payload;
+        const uuid = getUUIDBySocket(sock);
+        if (!uuid || !state || !room)
+            return;
+        setUserStreamState(room, uuid, state);
+    },
     // Router for user-generated messages
     messageRouter(this: ws, message: any) {
         const {event, payload} = JSON.parse(message);
@@ -106,6 +113,9 @@ const WebSocketController = {
         }
         else if (event === "room/deletemessage") {
 
+        }
+        else if (event === "room/setstreamstate") {
+            WebSocketController.setStreamState(this, payload);
         }
     }
 }

@@ -16,7 +16,8 @@ const RoomController = {
             screenshare,
             locked,
             lastActive: Date.now(),
-            users: []
+            users: [],
+            streams: {}
         }
 
         const encrypted_password = await argon2.hash(password);
