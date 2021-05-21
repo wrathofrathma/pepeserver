@@ -178,7 +178,7 @@ export function removeRoom(roomId: string) {
 }
 
 /**
- * Joins and subscribes a user to a specific room.
+ * Joins and subscribes a user to a specific room, then initiates webrtc contact with the other users.
  * @param {string} roomId Room ID
  * @param {Subscriber} subscriber Subscriber info
  */
@@ -196,6 +196,18 @@ export function joinRoom(roomId: string, subscriber: Subscriber) {
     publishRoomUpdate(roomId);
     // We also need to send the user all the previous chat messages.
     WebSocketController.emitRoomHistory(subscriber.socket, roomId, messages[roomId]);
+    // Lastly we need to connect this user to the existing users.
+    for (const user of rooms[roomId].users) {
+        if (subscriber.uuid === user)
+            continue;
+        const sock = getSocketByUUID(user as string);
+        sock?.send(JSON.stringify({
+            event: "rtc/init",
+            payload: {
+                target: user,
+            }
+        }))
+    }
 }
 
 /**

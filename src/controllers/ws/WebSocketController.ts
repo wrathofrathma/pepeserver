@@ -1,7 +1,7 @@
 import ws from "ws";
 import {publishMessage, setUserStreamState} from "../../data/rooms";
 import type {Message} from "../../data/rooms";
-import type {User} from "../../data/users";
+import {getSocketByUUID, User} from "../../data/users";
 import {getUUIDBySocket} from "../../data/users";
 import {rerollUsername} from "../../data/users";
 
@@ -116,6 +116,14 @@ const WebSocketController = {
         }
         else if (event === "room/setstreamstate") {
             WebSocketController.setStreamState(this, payload);
+        }
+        else if (event === "rtc/offer") {
+            const ts = getSocketByUUID(payload.target);
+            ts?.send(message);
+        }
+        else if (event === "rtc/answer") {
+            const ts = getSocketByUUID(payload.target);
+            ts?.send(message);
         }
     }
 }
