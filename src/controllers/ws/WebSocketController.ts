@@ -129,6 +129,10 @@ const WebSocketController = {
             const ts = getSocketByUUID(payload.target);
             ts?.send(message);
         }
+        else if (event === "rtc/renegotiation") {
+            const ts = getSocketByUUID(payload.target);
+            ts?.send(message);
+        }
     }
 }
 
