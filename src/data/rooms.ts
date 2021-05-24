@@ -200,11 +200,13 @@ export function joinRoom(roomId: string, subscriber: Subscriber) {
     for (const user of rooms[roomId].users) {
         if (subscriber.uuid === user)
             continue;
+        // For every user already in the room
+        // Get their socket and tell them to initiate contact with the new subscriber
         const sock = getSocketByUUID(user as string);
         sock?.send(JSON.stringify({
             event: "rtc/init",
             payload: {
-                target: user,
+                target: subscriber.uuid,
             }
         }))
     }
