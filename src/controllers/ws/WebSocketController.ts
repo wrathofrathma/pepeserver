@@ -94,12 +94,12 @@ const WebSocketController = {
         }
         publishMessage(user, payload);
     },
-    setStreamState(sock: ws, payload: {room: string, state: {webcam: boolean, audio: boolean}}) {
-        const {room, state} = payload;
+    setStreamState(sock: ws, payload: {room: string, state: {webcam: boolean, audio: boolean}, tracks: {webcam: string, audio: string}}) {
+        const {room, state, tracks} = payload;
         const uuid = getUUIDBySocket(sock);
         if (!uuid || !state || !room)
             return;
-        setUserStreamState(room, uuid, state);
+        setUserStreamState(room, uuid, tracks);
     },
     // Router for user-generated messages
     messageRouter(this: ws, message: any) {

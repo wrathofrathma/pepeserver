@@ -6,11 +6,10 @@ import type {MessagePayload} from "../controllers/ws/WebSocketController";
 import { getSocketByUUID } from "./users";
 import ws from "ws";
 
-
-export type RoomStreamState = {
+export type RoomStreamTracks = {
     [key: string]: {
-        webcam: boolean,
-        audio: boolean
+        webcam: string,
+        audio: string,
     }
 }
 
@@ -22,7 +21,7 @@ export type RoomEntry = {
     locked: Boolean,
     users: Array<String>,
     lastActive: number,
-    streams: RoomStreamState,
+    streams: RoomStreamTracks,
 }
 
 export type Message = {
@@ -288,11 +287,11 @@ export function publishMessage(uuid: string, payload: MessagePayload) {
  * @param user User's UUID, probably grabbed from the request or socket.
  * @param state Stream state
  */
-export function setUserStreamState(room: string, user: string, state: {webcam: boolean, audio: boolean}) {
+export function setUserStreamState(room: string, user: string, tracks: {webcam: string, audio: string}) {
     if (!rooms[room]) {
         return;
     }
-    rooms[room].streams[user] = state;
+    rooms[room].streams[user] = tracks;
     publishIndexUpdate();
     publishRoomUpdate(room);
 }
