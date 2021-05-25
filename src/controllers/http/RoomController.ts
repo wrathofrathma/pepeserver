@@ -17,7 +17,8 @@ const RoomController = {
             locked,
             lastActive: Date.now(),
             users: [],
-            streams: {}
+            streams: {},
+            streamState: {}
         }
 
         const encrypted_password = await argon2.hash(password);

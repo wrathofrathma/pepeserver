@@ -1,5 +1,5 @@
 import ws from "ws";
-import {publishMessage, setUserStreamState} from "../../data/rooms";
+import {publishMessage, setUserStreams, setUserStreamState} from "../../data/rooms";
 import type {Message} from "../../data/rooms";
 import {getSocketByUUID, User} from "../../data/users";
 import {getUUIDBySocket} from "../../data/users";
@@ -94,12 +94,19 @@ const WebSocketController = {
         }
         publishMessage(user, payload);
     },
-    setStreamState(sock: ws, payload: {room: string, state: {webcam: boolean, audio: boolean}, tracks: {webcam: string, audio: string}}) {
-        const {room, state, tracks} = payload;
+    setStreamState(sock: ws, payload: {room: string, state: {webcam: boolean, microphone: boolean, screenshare: boolean}}) {
+        const {room, state} = payload;
         const uuid = getUUIDBySocket(sock);
         if (!uuid || !state || !room)
             return;
-        setUserStreamState(room, uuid, tracks);
+        setUserStreamState(room, uuid, state);
+    },
+    setStreams(sock: ws, payload: {room: string, streams: {userMedia: string, screenshare: string}}) {
+        const {room, streams} = payload;
+        const uuid = getUUIDBySocket(sock);
+        if (!uuid || !streams || !room)
+            return;
+        setUserStreams(room, uuid, streams);
     },
     // Router for user-generated messages
     messageRouter(this: ws, message: any) {

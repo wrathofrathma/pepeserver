@@ -3,13 +3,21 @@ import type {Subscriber} from "./subscribers";
 import lodash from "lodash";
 import WebSocketController from "../controllers/ws/WebSocketController";
 import type {MessagePayload} from "../controllers/ws/WebSocketController";
-import { getSocketByUUID } from "./users";
+import users, { getSocketByUUID } from "./users";
 import ws from "ws";
 
 export type RoomStreamTracks = {
     [key: string]: {
-        webcam: string,
-        audio: string,
+        userMedia: string,
+        screenshare: string,
+    }
+}
+
+export type RoomStreamState = {
+    [key: string]: {
+        webcam: boolean,
+        microphone: boolean,
+        screenshare: boolean
     }
 }
 
@@ -22,6 +30,7 @@ export type RoomEntry = {
     users: Array<String>,
     lastActive: number,
     streams: RoomStreamTracks,
+    streamState: RoomStreamState
 }
 
 export type Message = {
@@ -65,12 +74,17 @@ function publishRoomUpdate(roomId: string) {
  * @param roomId Room ID
  * @param uuid User that left the room
  */
-function publishLeaveRoom(roomId: string, uuid: string) {
+function publishLeaveRoom(roomId: string, uuid: string, userStreams: {userMedia: string, screenshare: string}) {
     subscriptions.rooms.get(roomId)?.forEach((subscriber) => {
         subscriber.socket.send(JSON.stringify({
             event: "room/leave",
             payload: {
-                user: uuid
+                user: uuid,
+                // Also send the streams owned by this user so we can clean that up too.
+                streams: {
+                    userMedia: userStreams.userMedia, 
+                    screenshare: userStreams.screenshare
+                }
             }
         }))
     }) 
@@ -234,11 +248,12 @@ export function joinRoom(roomId: string, subscriber: Subscriber) {
  */
 export function leaveRoom(roomId: string, subscriber: Subscriber) {
     unsubscribe("room", subscriber, roomId);
+    const userStreams = rooms[roomId].streams[subscriber.uuid as string];
     lodash.remove(rooms[roomId].users, (user) => user === subscriber.uuid);
     delete rooms[roomId].streams[subscriber.uuid as string];
     publishIndexUpdate();
     publishRoomUpdate(roomId);
-    publishLeaveRoom(roomId, subscriber.uuid as string);
+    publishLeaveRoom(roomId, subscriber.uuid as string, userStreams);
 }
 
 
@@ -305,7 +320,16 @@ export function publishMessage(uuid: string, payload: MessagePayload) {
  * @param user User's UUID, probably grabbed from the request or socket.
  * @param state Stream state
  */
-export function setUserStreamState(room: string, user: string, tracks: {webcam: string, audio: string}) {
+export function setUserStreamState(room: string, user: string, tracks: {webcam: boolean, microphone: boolean, screenshare: boolean}) {
+    if (!rooms[room]) {
+        return;
+    }
+    rooms[room].streamState[user] = tracks;
+    publishIndexUpdate();
+    publishRoomUpdate(room);
+}
+
+export function setUserStreams(room: string, user: string, tracks: {userMedia: string, screenshare: string}) {
     if (!rooms[room]) {
         return;
     }
