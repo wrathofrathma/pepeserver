@@ -124,6 +124,9 @@ const WebSocketController = {
         else if (event === "room/setstreamstate") {
             WebSocketController.setStreamState(this, payload);
         }
+        else if (event === "room/setstreams") {
+            WebSocketController.setStreams(this, payload);
+        }
         else if (event === "rtc/offer") {
             const ts = getSocketByUUID(payload.target);
             ts?.send(message);
