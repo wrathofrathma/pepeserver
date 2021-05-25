@@ -61,6 +61,22 @@ function publishRoomUpdate(roomId: string) {
 }
 
 /**
+ * Publishes a leave room event to all users in the room so that they can clean up their connections with that user.
+ * @param roomId Room ID
+ * @param uuid User that left the room
+ */
+function publishLeaveRoom(roomId: string, uuid: string) {
+    subscriptions.rooms.get(roomId)?.forEach((subscriber) => {
+        subscriber.socket.send(JSON.stringify({
+            event: "room/leave",
+            payload: {
+                user: uuid
+            }
+        }))
+    }) 
+}
+
+/**
  * Subscribe to the events of the room index or a specific room.
  * @param {string} key What type of subscription is it? [index, room]
  * @param {Subscriber} subscriber Subscriber data
@@ -222,7 +238,9 @@ export function leaveRoom(roomId: string, subscriber: Subscriber) {
     delete rooms[roomId].streams[subscriber.uuid as string];
     publishIndexUpdate();
     publishRoomUpdate(roomId);
+    publishLeaveRoom(roomId, subscriber.uuid as string);
 }
+
 
 /**
  * Leaves and unsubscribes a user from all rooms
