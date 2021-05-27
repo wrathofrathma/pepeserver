@@ -1,2 +1,2 @@
-# minitsc
-Minimalistic typescript / express.js setup without opinionated boilerplate or unwanted functionaality.
+# Pepeserver
+A minimalistic REST API / WebRTC signaling server built using Express.js & websockets for https://github.com/wrathofrathma/pepechat
