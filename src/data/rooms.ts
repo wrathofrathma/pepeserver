@@ -248,7 +248,10 @@ export function joinRoom(roomId: string, subscriber: Subscriber) {
  */
 export function leaveRoom(roomId: string, subscriber: Subscriber) {
     unsubscribe("room", subscriber, roomId);
-    const userStreams = rooms[roomId].streams[subscriber.uuid as string];
+    let userStreams = rooms[roomId].streams[subscriber.uuid as string];
+    if (!userStreams) {
+        userStreams = { userMedia: "", screenshare: ""};
+    }
     lodash.remove(rooms[roomId].users, (user) => user === subscriber.uuid);
     delete rooms[roomId].streams[subscriber.uuid as string];
     publishIndexUpdate();
