@@ -54,7 +54,7 @@ export function createUser(socket: ws) {
     const username = generateUsername();
 
     const avatarList = readdirSync("dist/public/assets/avatars");
-    const avatar = `https://pepeserver.herokuapp.com/assets/avatars/${avatarList[Math.floor(Math.random() * avatarList.length)]}`;
+    const avatar = `https://pepeserver-2zjemde1b-wrathofrathma.vercel.app/assets/avatars/${avatarList[Math.floor(Math.random() * avatarList.length)]}`;
 
     users[uuid] = {
         username,
